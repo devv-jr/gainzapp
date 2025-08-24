@@ -1,20 +1,32 @@
-import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, Text, View } from 'react-native';
+import React, { useEffect } from "react";
+import { SafeAreaProvider } from 'react-native-safe-area-context';
+import AppNavigator from "./src/AppNavigator";
+import { AuthProvider } from "./src/contexts/AuthContext";
+import { PreferencesProvider } from "./src/contexts/PreferencesContext";
+import ConnectivityNotification from "./src/components/ConnectivityNotification";
+import { disableProductionLogs } from "./src/utils/logger";
+import { cleanupFirestoreListeners } from "./src/api/firebase";
+import "./src/utils/errorHandler"; // Inicializar manejo de errores
+
+// Deshabilitar logs innecesarios en producción
+disableProductionLogs();
 
 export default function App() {
+  useEffect(() => {
+    // Cleanup listeners cuando la app se cierre
+    return () => {
+      cleanupFirestoreListeners();
+    };
+  }, []);
+
   return (
-    <View style={styles.container}>
-      <Text>Open up App.js to start working on your app!</Text>
-      <StatusBar style="auto" />
-    </View>
+    <SafeAreaProvider>
+      <AuthProvider>
+        <PreferencesProvider>
+          <AppNavigator />
+          <ConnectivityNotification />
+        </PreferencesProvider>
+      </AuthProvider>
+    </SafeAreaProvider>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#fff',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-});
